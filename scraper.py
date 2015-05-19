@@ -1,24 +1,20 @@
-# This is a template for a Python scraper on morph.io (https://morph.io)
-# including some code snippets below that you should find helpful
+import os
+import boto
+import boto.s3
+from boto.s3.key import Key
 
-# import scraperwiki
-# import lxml.html
-#
-# # Read in a page
-# html = scraperwiki.scrape("http://foo.com")
-#
-# # Find something on the page using css selectors
-# root = lxml.html.fromstring(html)
-# root.cssselect("div[align='left']")
-#
-# # Write out to the sqlite database using scraperwiki library
-# scraperwiki.sqlite.save(unique_keys=['name'], data={"name": "susan", "occupation": "software developer"})
-#
-# # An arbitrary query against the database
-# scraperwiki.sql.select("* from data where 'name'='peter'")
 
-# You don't have to do things with the ScraperWiki and lxml libraries.
-# You can use whatever libraries you want: https://morph.io/documentation/python
-# All that matters is that your final data is written to an SQLite database
-# called "data.sqlite" in the current working directory which has at least a table
-# called "data".
+def upload():
+    conn = boto.connect_s3(os.environ.get('MORPH_AWS_ACCESS_KEY_ID'),
+                           os.environ.get('MORPH_AWS_SECRET_ACCESS_KEY'),
+                           validate_certs=False)
+    bucket = conn.get_bucket('morph-upload-test')
+    k = Key(bucket)
+    k.key = 'popolo-test.txt'
+    k.set_contents_from_string("I'm a banana!")
+    k.set_metadata('Content-Type', 'text/plain')
+    k.make_public()
+    print k.generate_url(0, query_auth=False, force_http=True)
+
+if __name__ == '__main__':
+    upload()
